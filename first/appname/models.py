@@ -29,3 +29,18 @@ class MenuItem(models.Model):
     parent = models.ForeignKey('self', on_delete=models.CASCADE, blank=True,null=True)
     menu = models.ForeignKey(Menu, on_delete=models.CASCADE)
     is_disabled = models.BooleanField(default=False)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

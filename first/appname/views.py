@@ -6,6 +6,54 @@ from .serializers import SliderSerializer
 from rest_framework import status
 
 
+from django.utils.translation import gettext as _
+from rest_framework.authtoken.models import Token
+from rest_framework.status import (
+    HTTP_200_OK,
+)
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+from rest_framework.response import Response
+
+from rest_framework.authtoken.views import ObtainAuthToken
+
+from .authentication import token_expire_handler
+from .serializers import AuthTokenSerializer,UsersSerializers
+from django.contrib.auth.models import User
+
+
+class ObtainExpiringAuthToken(ObtainAuthToken):  # Login
+    def post(self, request, *args, **kwargs):
+        serializer = AuthTokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        try:
+            token = Token.objects.get(user=user)
+            is_expired, token = token_expire_handler(token)
+        except Token.DoesNotExist:
+            token = Token.objects.create(user=user)
+        return Response({'token': token.key})
+
+
+class VerifyToken(APIView):  # Check token expired or not
+    permission_classes = [IsAuthenticated]
+    http_method_names = ['get']
+
+    def get(self, request, format=None):
+        return Response('', status=HTTP_200_OK)
+
+class CurrentUserView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        user = request.user         # request.user , ile istek atan kullanıcıya ulaşabilmek için bu servise token göndermek zorundasın
+                                    # token göndermej için de kayıtlı bir kullanıcı olman lazım. önce tokenı veren servise istek atarsın
+                                    # kayıtlı isen sana tokeni döndürür.
+        serializer = UsersSerializers(user)
+        return Response(serializer.data)
+
+
+
 class SliderListView(ListAPIView):
     queryset = Slider.objects.filter(is_published=True)
     serializer_class = SliderSerializer
@@ -94,3 +142,15 @@ class MenuItemDetailView(generics.RetrieveUpdateAPIView):
 class MenuSelectedItemList(generics.ListAPIView):
     queryset = MenuItem.objects.filter(menu__selected=True)
     serializer_class = MenuItemSerializer
+    #permission_classes = [IsAuthenticated]
+
+
+
+
+
+
+
+
+
+
+

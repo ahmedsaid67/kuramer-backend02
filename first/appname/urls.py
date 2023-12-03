@@ -1,6 +1,7 @@
 from django.urls import path,include
-from .views import SliderListView, MenuViewSet, MenuItemListCreateView, MenuItemByMenuView, MenuItemDetailView, MenuSelectedItemList   # Burada SliderListView'ı ekleyin
+from .views import SliderListView, MenuViewSet, MenuItemListCreateView, MenuItemByMenuView, MenuItemDetailView, MenuSelectedItemList
 from rest_framework.routers import DefaultRouter
+from .views import ObtainExpiringAuthToken, VerifyToken, CurrentUserView
 
 router = DefaultRouter()
 router.register(r'menus', MenuViewSet)
@@ -18,5 +19,11 @@ urlpatterns = [
     # seçili menünün ögeleri listeler
     path('menuitems/<int:pk>/', MenuItemDetailView.as_view(), name='menuitem-detail'),
     # Tekil menu öğelerini sunma için
-    # ...
+
+    path('token/login/', ObtainExpiringAuthToken.as_view()),
+    path('token/verify/', VerifyToken.as_view()),
+    path('auth/users/me/', CurrentUserView.as_view()),
+
+
+
 ]
